@@ -61,7 +61,7 @@ void RRT_tree::addLeaf(int x, int y, int xp, int yp){
   _tree.push_back(RRT_node(x, y, xp, yp));
 }
 
-void RRT_tree::drawTree(cv::Mat* map, int xg, int yg){
+void RRT_tree::drawTree(cv::Mat* map, int xg, int yg, std::string windowName){
   for(int i = 0; i < _tree.size(); i++){
     if(i == 0) cv::circle(*map, cv::Point(_tree[i].getX(),_tree[i].getY()), 3, cv::Scalar(0,255,0),3);
     else{
@@ -70,17 +70,17 @@ void RRT_tree::drawTree(cv::Mat* map, int xg, int yg){
     }
   }
   cv::circle(*map, cv::Point(xg,yg), 3, cv::Scalar(0,0,255), 3);
-  imshow("RRT tree", *map);
+  imshow(windowName, *map);
 }
 
-void RRT_tree::drawPath(cv::Mat* map, int xg, int yg){
+void RRT_tree::drawPath(cv::Mat* map, int xg, int yg, std::string windowName){
   for(int i = 0; i < _path.size(); i++){
     cv::circle(*map, cv::Point(_path[i].getX(),_path[i].getY()), 3, cv::Scalar(255,0,0), 3);
     if(_path[i].hasParent()) cv::line(*map, cv::Point(_path[i].getX(),_path[i].getY()), cv::Point(_path[i].getXp(),_path[i].getYp()), cv::Scalar(100,100,100), 3);
   }
   cv::circle(*map, cv::Point(_path[0].getX(),_path[0].getY()), 3, cv::Scalar(0,255,0),3);
   cv::circle(*map, cv::Point(xg,yg), 3, cv::Scalar(0,0,255), 3);
-  imshow("Path", *map);
+  imshow(windowName, *map);
 }
 
 void RRT_tree::buildTree(int xi, int yi, int xg, int yg, cv::Mat map, int dq, int maxIterations){
@@ -99,7 +99,6 @@ void RRT_tree::buildTree(int xi, int yi, int xg, int yg, cv::Mat map, int dq, in
     if(newConfig(xnear, ynear, xr, yr, &xnew, &ynew, dq, gray)){
       addLeaf(xnew, ynew, xnear, ynear);
     }
-    drawTree(&map, xg, yg);
   }
   addLeaf(xg, yg, xnew, ynew);
   std::cout << toString() << std::endl;
@@ -181,4 +180,63 @@ std::string RRT_tree::toString(){
     str += "\tNode #" + std::to_string(i) + " : " + _tree[i].toString() + "\n";
   }
   return str;
+}
+
+
+void RRT_tree::removeUnecessaryNodes(cv::Mat map, int xg, int yg){
+  std::vector<RRT_node> newPath;
+  bool clear;
+  int lastVisiblePoint = 0;
+  newPath.push_back(_path[0]);
+
+  cv::Mat gray;
+  cv::cvtColor(map, gray, CV_BGR2GRAY);
+
+  for(int i = 0; i < newPath.size(); i++){
+    if(newPath[i].getX() != xg && newPath[i].getX() != yg){
+      for(int j = lastVisiblePoint+1; j < _path.size(); j++){
+        clear = true;
+        // lastVisiblePoint = j;
+
+        std::cout << "line iterator between i:" << i << ", last point:" << lastVisiblePoint << ", j:" << j << std::endl;
+        cv::LineIterator it(gray, cv::Point(newPath[i].getX(), newPath[i].getY()), cv::Point(_path[j].getX(), _path[j].getY()));
+
+        //Checking if path from i to j is free
+        for(int i = 0; i < it.count; i++, ++it){
+          if(gray.at<uchar>(it.pos()) == 0){
+            clear = false;
+            break;
+          }
+        }
+
+        if(clear){
+          lastVisiblePoint = j;
+          std::cout << "path is clear" << std::endl;
+        }
+        else std::cout << "path is blocked" << std::endl;
+      }
+      newPath.push_back(_path[lastVisiblePoint]);
+      newPath[i+1].setParent(newPath[i].getX(), newPath[i].getY());
+      std::cout << "Added (" << _path[lastVisiblePoint].getX() << "," << _path[lastVisiblePoint].getY() << ") to new path, parent is (" << _path[lastVisiblePoint].getXp() << "," << _path[lastVisiblePoint].getYp() << ")" << std::endl;
+    }
+  }
+
+  _path = newPath;
+}
+
+
+std::vector<RRT_node> RRT_tree::findPath(int xi, int yi, int xg, int yg, cv::Mat map, bool draw, int dq, int maxIterations){
+
+  cv::Mat path = map.clone();
+  cv::Mat newPath = map.clone();
+
+  buildTree(xi, yi, xg, yg, map, dq, maxIterations);
+  calculatePath(xi, yi, xg, yg);
+  if(draw) drawTree(&map, xg, yg, "RRT tree");
+  if(draw) drawPath(&path, xg, yg, "Raw path");
+
+  removeUnecessaryNodes(map, xg, yg);
+  if(draw) drawPath(&newPath, xg, yg, "Smoothed path");
+
+  return _path;
 }
