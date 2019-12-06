@@ -25,8 +25,8 @@ void load_map_node::processMap(){
   Mat wallMap, clearMap, unknownMap;
 
   // Binary Threshold
-  threshold(map,wallMap, 1, 1, THRESH_BINARY_INV);
-  threshold(map,clearMap, 250, 1, THRESH_BINARY);
+  threshold(map,wallMap, 20, 1, THRESH_BINARY_INV);
+  threshold(map,clearMap, 220, 1, THRESH_BINARY);
   unknownMap = 1 - (wallMap + clearMap);
   procMap = 100*wallMap + 101 * unknownMap; //Occupancy Map
 
@@ -54,6 +54,9 @@ void load_map_node::sendMap(){
   //   cout << k << " ";
 
   map_pub_.publish(grid);
+  imshow("Origin", map);
+  imshow("Loadmap", procMap);
+  waitKey(0);
 }
 
 int main(int argc, char** argv){
