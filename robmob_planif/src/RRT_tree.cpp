@@ -70,17 +70,17 @@ void RRT_tree::drawTree(cv::Mat* map, int xg, int yg){
     }
   }
   cv::circle(*map, cv::Point(xg,yg), 3, cv::Scalar(0,0,255), 3);
+  imshow("RRT tree", *map);
 }
 
 void RRT_tree::drawPath(cv::Mat* map, int xg, int yg){
   for(int i = 0; i < _path.size(); i++){
-    if(i == 0) cv::circle(*map, cv::Point(_path[i].getX(),_path[i].getY()), 3, cv::Scalar(0,255,0),3);
-    else{
-      cv::circle(*map, cv::Point(_path[i].getX(),_path[i].getY()), 3, cv::Scalar(255,0,0), 3);
-      cv::line(*map, cv::Point(_path[i].getX(),_path[i].getY()), cv::Point(_path[i].getXp(),_path[i].getYp()), cv::Scalar(100,100,100), 3);
-    }
+    cv::circle(*map, cv::Point(_path[i].getX(),_path[i].getY()), 3, cv::Scalar(255,0,0), 3);
+    if(_path[i].hasParent()) cv::line(*map, cv::Point(_path[i].getX(),_path[i].getY()), cv::Point(_path[i].getXp(),_path[i].getYp()), cv::Scalar(100,100,100), 3);
   }
+  cv::circle(*map, cv::Point(_path[0].getX(),_path[0].getY()), 3, cv::Scalar(0,255,0),3);
   cv::circle(*map, cv::Point(xg,yg), 3, cv::Scalar(0,0,255), 3);
+  imshow("Path", *map);
 }
 
 void RRT_tree::buildTree(int xi, int yi, int xg, int yg, cv::Mat map, int dq, int maxIterations){
@@ -99,8 +99,7 @@ void RRT_tree::buildTree(int xi, int yi, int xg, int yg, cv::Mat map, int dq, in
     if(newConfig(xnear, ynear, xr, yr, &xnew, &ynew, dq, gray)){
       addLeaf(xnew, ynew, xnear, ynear);
     }
-    // drawTree(&map, xg, yg);
-    imshow("test", map);
+    drawTree(&map, xg, yg);
   }
   addLeaf(xg, yg, xnew, ynew);
   std::cout << toString() << std::endl;
@@ -161,14 +160,16 @@ RRT_node& RRT_tree::findParent(int xp, int yp){
       return n;
     }
   }
-  return children;
 }
 
 void RRT_tree::calculatePath(int xi, int yi, int xg, int yg){
-  RRT_node& cur;
-  auto it = _path.insert(vec.begin(), _tree[_tree.size()-1]);
-  while(_path[0].getXp() != xi || _path[0].getYp() != yi){
-    _path.insert(it, findParent(_path[0].getXp(), _path[0].getYp()));
+  RRT_node cur;
+  auto it = _path.insert(_path.begin(), _tree[_tree.size()-1]);
+  it = _path.begin();
+  while(_path[0].getX() != xi || _path[0].getY() != yi){
+    if(_path[0].hasParent()) _path.insert(it, findParent(_path[0].getXp(), _path[0].getYp()));
+    std::cout << "Added (" << _path[0].getX() << "," << _path[0].getY() << ") to path, parent is (" << _path[0].getXp() << "," << _path[0].getYp() << ")" << std::endl;
+    it = _path.begin();
   }
 }
 
