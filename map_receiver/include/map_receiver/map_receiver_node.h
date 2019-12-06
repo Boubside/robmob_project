@@ -22,7 +22,7 @@ class map_receiver_node{
   public :
   map_receiver_node();
   ~map_receiver_node();
-  void getMap();
+  void showMap();
   void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& grid);
 
   void setFlag(int x){flag = x;}

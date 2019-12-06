@@ -1,7 +1,7 @@
 #include "load_map/load_map_node.h"
 
 load_map_node::load_map_node(){
-  path = "src/load_map/testMap/maptest2.pgm";
+  path = "src/load_map/testMap/map.jpg";
   map_pub_ = _nh.advertise<nav_msgs::OccupancyGrid>("map", 1);
   cout<<"start load_map"<<endl;
 }
@@ -64,10 +64,11 @@ int main(int argc, char** argv){
     return 0;
 
   load_map.processMap();
-  //while(1){
+  for(int i=0;i<3;i++){
     load_map.sendMap();
     ros::spinOnce();
-  //}
+    waitKey(1000);
+  }
 
 
 
