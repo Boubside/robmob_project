@@ -58,7 +58,7 @@ public:
   void drawTree(cv::Mat* map, int xg, int yg);
   void drawPath(cv::Mat* map, int xg, int yg);
 
-  RRT_node& findParent(const RRT_node& children);
+  RRT_node& findParent(int xp, int yp);
   void calculatePath(int xi, int yi, int xg, int yg);
 
   std::string toString();

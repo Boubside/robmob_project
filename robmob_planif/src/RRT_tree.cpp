@@ -161,12 +161,11 @@ RRT_node& RRT_tree::findParent(int xp, int yp){
       return n;
     }
   }
-  return children;
 }
 
 void RRT_tree::calculatePath(int xi, int yi, int xg, int yg){
-  RRT_node& cur;
-  auto it = _path.insert(vec.begin(), _tree[_tree.size()-1]);
+  RRT_node cur;
+  auto it = _path.insert(_path.begin(), _tree[_tree.size()-1]);
   while(_path[0].getXp() != xi || _path[0].getYp() != yi){
     _path.insert(it, findParent(_path[0].getXp(), _path[0].getYp()));
   }
