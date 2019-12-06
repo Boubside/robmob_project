@@ -3,9 +3,11 @@
 load_map_node::load_map_node(){
   path = "src/load_map/testMap/maptest2.pgm";
   map_pub_ = _nh.advertise<nav_msgs::OccupancyGrid>("map", 1);
+  cout<<"start load_map"<<endl;
 }
 
 load_map_node::~load_map_node(){
+  cout<<"end load_map"<<endl;
 }
 
 int load_map_node::getMap(){
@@ -14,7 +16,7 @@ int load_map_node::getMap(){
     cout <<  "Could not open or find the image" << endl ;
     return 0;
   }
-
+  return 1;
 }
 
 //----------------Create the Occupancy Map---------------------//
@@ -62,8 +64,11 @@ int main(int argc, char** argv){
     return 0;
 
   load_map.processMap();
-  load_map.sendMap();
-  ros::spin();
+  //while(1){
+    load_map.sendMap();
+    ros::spinOnce();
+  //}
+
 
 
 }
