@@ -13,7 +13,7 @@ int main(){
     return -1;
   }
 
-  std::vector<RRT_node> path = t.findPath(50, 50, 550, 550, map, true);
+  std::vector<RRT_node> path = t.findPath(50, 50, 550, 550, 20, map, true, 20);
 
   cv::waitKey(0);
 

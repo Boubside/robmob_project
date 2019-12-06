@@ -47,6 +47,8 @@ private:
   std::vector<RRT_node> _tree;
   std::vector<RRT_node> _path;
 
+  void inflateObstacles(cv::Mat *map, int radius); //radius in pixel
+
   bool goalReached(int xg, int yg, int xnew, int ynew, int dq);
   void randFreeConf(int* xr, int* yr, cv::Mat map);
   void nearestNode(int xr, int yr, int* xnear, int *ynear);
@@ -67,7 +69,7 @@ public:
   RRT_tree ();
   ~RRT_tree ();
 
-  std::vector<RRT_node> findPath(int xi, int yi, int xg, int yg, cv::Mat map, bool draw = false, int dq = 30, int maxIterations = 100000);
+  std::vector<RRT_node> findPath(int xi, int yi, int xg, int yg, int robotRadius, cv::Mat map, bool draw = false, int dq = 30, int maxIterations = 100000);
 
   std::string toString();
 };

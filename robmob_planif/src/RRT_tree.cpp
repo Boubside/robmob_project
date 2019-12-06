@@ -53,6 +53,7 @@ RRT_tree::~RRT_tree (){
 
 }
 
+//Add a new leaf to the RRt tree
 void RRT_tree::addLeaf(const RRT_node& leaf){
   _tree.push_back(leaf);
 }
@@ -61,6 +62,7 @@ void RRT_tree::addLeaf(int x, int y, int xp, int yp){
   _tree.push_back(RRT_node(x, y, xp, yp));
 }
 
+//Draw the tree on map and print to screen
 void RRT_tree::drawTree(cv::Mat* map, int xg, int yg, std::string windowName){
   for(int i = 0; i < _tree.size(); i++){
     if(i == 0) cv::circle(*map, cv::Point(_tree[i].getX(),_tree[i].getY()), 3, cv::Scalar(0,255,0),3);
@@ -73,6 +75,7 @@ void RRT_tree::drawTree(cv::Mat* map, int xg, int yg, std::string windowName){
   imshow(windowName, *map);
 }
 
+//Draw the path
 void RRT_tree::drawPath(cv::Mat* map, int xg, int yg, std::string windowName){
   for(int i = 0; i < _path.size(); i++){
     cv::circle(*map, cv::Point(_path[i].getX(),_path[i].getY()), 3, cv::Scalar(255,0,0), 3);
@@ -83,16 +86,20 @@ void RRT_tree::drawPath(cv::Mat* map, int xg, int yg, std::string windowName){
   imshow(windowName, *map);
 }
 
+//Build the RRT tree
 void RRT_tree::buildTree(int xi, int yi, int xg, int yg, cv::Mat map, int dq, int maxIterations){
+  //Adding initial node
   addLeaf(xi, yi);
   int xnew = xi;
   int ynew = yi;
   int xr, yr, xnear, ynear;
   int itCount = 0;
 
+  //Converting image to grayscale for treatement
   cv::Mat gray;
   cv::cvtColor(map, gray, CV_BGR2GRAY);
 
+  //RRT algorithm
   while(!goalReached(xg ,yg, xnew, ynew, dq) && itCount++ < maxIterations){
     randFreeConf(&xr, &yr, gray);
     nearestNode(xr, yr, &xnear, &ynear);
@@ -101,7 +108,6 @@ void RRT_tree::buildTree(int xi, int yi, int xg, int yg, cv::Mat map, int dq, in
     }
   }
   addLeaf(xg, yg, xnew, ynew);
-  std::cout << toString() << std::endl;
 }
 
 bool RRT_tree::goalReached(int xg, int yg, int xnew, int ynew, int dq){
@@ -153,6 +159,14 @@ bool RRT_tree::newConfig(int xnear, int ynear, int xr, int yr, int *xnew, int *y
 }
 
 
+void RRT_tree::inflateObstacles(cv::Mat *map, int radius){
+  cv::Mat dilatation_dst;
+  cv::Mat element = getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(2*radius+1, 2*radius+1), cv::Point(radius, radius));
+  erode(*map, dilatation_dst, element );
+  *map = dilatation_dst;
+}
+
+
 RRT_node& RRT_tree::findParent(int xp, int yp){
   for(RRT_node& n : _tree){
     if(n.getX() == xp && n.getY() == yp){
@@ -167,7 +181,6 @@ void RRT_tree::calculatePath(int xi, int yi, int xg, int yg){
   it = _path.begin();
   while(_path[0].getX() != xi || _path[0].getY() != yi){
     if(_path[0].hasParent()) _path.insert(it, findParent(_path[0].getXp(), _path[0].getYp()));
-    std::cout << "Added (" << _path[0].getX() << "," << _path[0].getY() << ") to path, parent is (" << _path[0].getXp() << "," << _path[0].getYp() << ")" << std::endl;
     it = _path.begin();
   }
 }
@@ -198,7 +211,6 @@ void RRT_tree::removeUnecessaryNodes(cv::Mat map, int xg, int yg){
         clear = true;
         // lastVisiblePoint = j;
 
-        std::cout << "line iterator between i:" << i << ", last point:" << lastVisiblePoint << ", j:" << j << std::endl;
         cv::LineIterator it(gray, cv::Point(newPath[i].getX(), newPath[i].getY()), cv::Point(_path[j].getX(), _path[j].getY()));
 
         //Checking if path from i to j is free
@@ -211,13 +223,10 @@ void RRT_tree::removeUnecessaryNodes(cv::Mat map, int xg, int yg){
 
         if(clear){
           lastVisiblePoint = j;
-          std::cout << "path is clear" << std::endl;
         }
-        else std::cout << "path is blocked" << std::endl;
       }
       newPath.push_back(_path[lastVisiblePoint]);
       newPath[i+1].setParent(newPath[i].getX(), newPath[i].getY());
-      std::cout << "Added (" << _path[lastVisiblePoint].getX() << "," << _path[lastVisiblePoint].getY() << ") to new path, parent is (" << _path[lastVisiblePoint].getXp() << "," << _path[lastVisiblePoint].getYp() << ")" << std::endl;
     }
   }
 
@@ -225,10 +234,12 @@ void RRT_tree::removeUnecessaryNodes(cv::Mat map, int xg, int yg){
 }
 
 
-std::vector<RRT_node> RRT_tree::findPath(int xi, int yi, int xg, int yg, cv::Mat map, bool draw, int dq, int maxIterations){
+std::vector<RRT_node> RRT_tree::findPath(int xi, int yi, int xg, int yg, int robotRadius, cv::Mat map, bool draw, int dq, int maxIterations){
+  inflateObstacles(&map, robotRadius);
 
   cv::Mat path = map.clone();
   cv::Mat newPath = map.clone();
+
 
   buildTree(xi, yi, xg, yg, map, dq, maxIterations);
   calculatePath(xi, yi, xg, yg);
