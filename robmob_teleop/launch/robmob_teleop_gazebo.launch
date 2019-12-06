@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+	<arg name="map" default="buvette" />
+	<include file="$(find minilab_simulation)/launch/minilab_gazebo.launch" >
+		<arg name="map_name" value="$(arg map)" />
+	</include>
+	<include file="$(find minilab_simulation)/launch/minilab_state_publisher.launch" />
+
+  <node pkg="robmob_teleop" type="robmob_teleop_node" name="robmob_teleop_node"/>
+	<node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" args="scan:=/scan"/>
+  <node pkg="joy" type="joy_node" name="joy_node"/>
+</launch>

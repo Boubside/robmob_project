@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+  <node pkg="robmob_teleop" type="robmob_teleop_node" name="robmob_teleop_node"/>
+	<node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" args="scan:=/scan"/>
+  <node pkg="joy" type="joy_node" name="joy_node"/>
+</launch>

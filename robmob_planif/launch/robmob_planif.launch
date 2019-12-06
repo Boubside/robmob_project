@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<launch>
+  <node pkg="robmob_planif" type="robmob_planif_node" name="robmob_planif_node" launch-prefix="gdb --args"/>
+</launch>

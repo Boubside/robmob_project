@@ -1,0 +1,144 @@
+<?xml version="1.0" ?>
+
+<robot name="indoor">
+	<gazebo>
+		<static> true </static>
+	</gazebo>
+	<link name="walls">
+		<inertial>
+      		<origin xyz="2.1868135171357 0.517066880632341 0.972681012447627" rpy="0 0 0" />
+      		<mass value="18631.1836301688" />
+      		<inertia ixx="22.0741938502609" ixy="7.44978206107817" ixz="-70.5318630944032" iyy="249.709544510604" iyz="2.30581687684954" izz="228.122444930979" />
+    	</inertial>
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+				<mesh filename="package://minilab_navigation/meshes/indoor/walls.STL" />
+			</geometry>
+			<material name="">
+				<color rgba="0.698039215686274 0.698039215686274 0.698039215686274 1" />
+			</material>
+		</visual>
+		<collision>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+				<mesh filename="package://minilab_navigation/meshes/indoor/walls.STL" />
+			</geometry>
+		</collision>
+	</link>
+	<!--link name="wardrobe_link">
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+				<mesh filename="package://minilab_navigation/meshes/indoor/wardrobe_link.STL" />
+			</geometry>
+			<material name="">
+				<color rgba="1 1 1 1" />
+			</material>
+		</visual>
+		<collision>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+				<mesh filename="package://minilab_navigation/meshes/indoor/wardrobe_link.STL" />
+			</geometry>
+		</collision>
+	</link>
+	<joint name="wardrobe_joint" type="fixed">
+		<origin xyz="1.3934 1.1423 0" rpy="-3.1416 0 3.1416" />
+		<parent link="walls" />
+		<child link="wardrobe_link" />
+		<axis xyz="1 0 0" />
+	</joint-->
+	<!--link name="bed_link">
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+				<mesh filename="package://minilab_navigation/meshes/indoor/bed_link.STL" />
+			</geometry>
+			<material name="">
+				<color rgba="0.79216 0.81961 0.93333 1" />
+			</material>
+		</visual>
+		<!collision>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+				<mesh filename="package://minilab_navigation/meshes/indoor/bed_link.STL" />
+			</geometry>
+		</collision>
+	</link>
+	<joint name="bed_joint" type="fixed">
+		<origin xyz="0 3.7317 0.7" rpy="1.5708 0 1.5708" />
+		<parent link="walls" />
+		<child link="bed_link" />
+		<axis xyz="0 0 -1" />
+	</joint-->
+	<!--link name="toilet_link">
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+				<mesh filename="package://minilab_navigation/meshes/indoor/toilet_link.STL" />
+			</geometry>
+			<material name="">
+				<color rgba="0.98824 0.98431 1 1" />
+			</material>
+		</visual>
+		<collision>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+				<mesh filename="package://minilab_navigation/meshes/indoor/toilet_link.STL" />
+			</geometry>
+		</collision>
+	</link>
+	<joint name="toilet_joint" type="fixed">
+		<origin xyz="3.6978 0.654 0" rpy="1.5708 0 -1.5708" />
+		<parent link="walls" />
+		<child link="toilet_link" />
+		<axis xyz="0 0 1" />
+	</joint-->
+	<link name="table_link">
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+				<mesh filename="package://minilab_navigation/meshes/indoor/table_link.STL" />
+			</geometry>
+			<material name="">
+				<color rgba="0.79216 0.81961 0.93333 1" />
+			</material>
+		</visual>
+		<!--collision>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+				<mesh filename="package://minilab_navigation/meshes/indoor/table_link.STL" />
+			</geometry>
+		</collision-->
+	</link>
+	<joint name="table_joint" type="fixed">
+		<origin xyz="0.71727 -2.3711 0.366" rpy="0 0 -1.5708" />
+		<parent link="walls" />
+		<child link="table_link" />
+		<axis xyz="0 0 0" />
+	</joint>
+	<!--link name="chairs_link">
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+				<mesh filename="package://minilab_navigation/meshes/indoor/chairs_link.STL" />
+			</geometry>
+			<material name="">
+				<color rgba="1 1 1 1" />
+			</material>
+		</visual>
+		<collision>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+				<mesh filename="package://minilab_navigation/meshes/indoor/chairs_link.STL" />
+			</geometry>
+		</collision>
+	</link>
+	<joint name="chairs_joint" type="fixed">
+		<origin xyz="1.5968 -2.7032 5.3412E-05" rpy="6.0566E-15 1.2326E-32 -3.132" />
+		<parent link="walls" />
+		<child link="chairs_link" />
+		<axis xyz="0 0 0" />
+	</joint-->
+</robot>
