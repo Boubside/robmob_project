@@ -14,7 +14,7 @@ private:
   ros::NodeHandle _nh;
 
   int linear_, angular_;
-  double l_scale = 0.5; 
+  double l_scale = 0.5;
   double a_scale = 1;
   ros::Publisher vel_pub_;
   ros::Subscriber joy_sub_;
