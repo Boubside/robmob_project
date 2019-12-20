@@ -4,20 +4,46 @@
 #include <iostream>
 #include <ros/ros.h>
 #include <nav_msgs/OccupancyGrid.h>
+#include <nav_msgs/Path.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/Pose.h>
+#include <tf/tf.h>
+#include <tf/transform_datatypes.h>
+#include <tf/transform_listener.h>
 
 double resolution;
 double robotRadius = 0.250;
 cv::Mat map;
 ros::Subscriber occupancyGrid;
+ros::Publisher pubPath;
+nav_msgs::Path pathMsg;
 int flag;
+int xg, yg, xi, yi;
+
+void getRobotPose(){
+  tf::Transformer listener;
+  bool found = false;
+  while(ros::ok() && !found){
+    tf::StampedTransform transform;
+    try{
+      ros::Time now = ros::Time::now();
+      listener.waitForTransform("map","base_link",now,ros::Duration(2.0));
+      listener.lookupTransform("map","base_link",ros::Time(0),transform);
+      found = true;
+    }
+    catch(tf::TransformException e){
+      ROS_INFO("%s", e.what());
+      ros::Duration(1.0).sleep();
+      continue;
+    }
+
+    xi = transform.getOrigin().x();
+    yi = transform.getOrigin().y();
+  }
+
+}
 
 void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& grid){
-  // if (flag==0){
-  //   cout<<"Map received !"<<endl;
-  //   resolution = grid->info.resolution;
-  //   flag = 1;
-  // }
-
   if (flag==0){
     std::cout<<"Map received !"<<std::endl;
     resolution = grid->info.resolution;
@@ -35,9 +61,25 @@ void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& grid){
           map.at<uchar>(i,j) = 0;
       }
     }
+
+    getRobotPose();
+
+    std::cout << "x = " << xi << ", y = " << yi << std::endl;
+
     std::cout<<"Map treated !"<<std::endl;
     imshow("Map",map);
     flag = 1;
+  }
+}
+
+
+
+void createPathMsg(std::vector<RRT_node>& path){
+  geometry_msgs::PoseStamped p;
+  for(int i = 0; i < path.size(); i++){
+    p.pose.position.x = path[i].getX();
+    p.pose.position.y = path[i].getY();
+    pathMsg.poses.push_back(p);
   }
 }
 
@@ -47,7 +89,8 @@ int main(int argc, char **argv){
 
   ros::init(argc, argv, "robmob_planif_node");
   ros::NodeHandle _nh;
-  occupancyGrid = _nh.subscribe<nav_msgs::OccupancyGrid>("map", 1, &mapCallback);
+  occupancyGrid = _nh.subscribe<nav_msgs::OccupancyGrid>("map", 10, &mapCallback);
+  pubPath = _nh.advertise<nav_msgs::Path>("path", 10);
   char key = 'a';
 
   while(flag != 1 && key != 'q'){
@@ -66,11 +109,18 @@ int main(int argc, char **argv){
   // }
   cv::cvtColor(map,map,CV_GRAY2BGR);
 
+  cv::imshow("test", map);
+  cv::waitKey(0);
   std::cout << "Starting rrt" << std::endl;
   std::vector<RRT_node> path = t.findPath(50, 50, 550, 550, radius, map, true, 20);
   std::cout << "rrt finished" << std::endl;
+  createPathMsg(path);
 
-  cv::waitKey(0);
+  while(_nh.ok()){
+    pubPath.publish(pathMsg);
+    ros::spinOnce();
+  }
+
 
   return 0;
 }
