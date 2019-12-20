@@ -54,9 +54,6 @@ void load_map_node::sendMap(){
   //   cout << k << " ";
 
   map_pub_.publish(grid);
-  imshow("Origin", map);
-  imshow("Loadmap", procMap);
-  waitKey(0);
 }
 
 int main(int argc, char** argv){
