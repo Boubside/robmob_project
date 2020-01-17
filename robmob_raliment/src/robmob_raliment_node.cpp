@@ -148,28 +148,28 @@ void robmob_raliment_node::generateCommand()
 
 void robmob_raliment_node::run()
 {
-  // while(ros::ok() && !_pathReceived)
-  //   ros::spinOnce();
+  while(ros::ok() && !_pathReceived)
+    ros::spinOnce();
 
-  geometry_msgs::PoseStamped p;
-  p.pose.position.x = 0;
-  p.pose.position.y = 2;
-  _path.poses.push_back(p);
-  p.pose.position.x = -3;
-  p.pose.position.y = 2;
-  _path.poses.push_back(p);
-  p.pose.position.x = -4;
-  p.pose.position.y = -8;
-  _path.poses.push_back(p);
-  p.pose.position.x = -6;
-  p.pose.position.y = -8;
-  _path.poses.push_back(p);
-  p.pose.position.x = -6;
-  p.pose.position.y = 2;
-  _path.poses.push_back(p);
-  p.pose.position.x = -8;
-  p.pose.position.y = 2;
-  _path.poses.push_back(p);
+  // geometry_msgs::PoseStamped p;
+  // p.pose.position.x = 0;
+  // p.pose.position.y = 2;
+  // _path.poses.push_back(p);
+  // p.pose.position.x = -3;
+  // p.pose.position.y = 2;
+  // _path.poses.push_back(p);
+  // p.pose.position.x = -4;
+  // p.pose.position.y = -8;
+  // _path.poses.push_back(p);
+  // p.pose.position.x = -6;
+  // p.pose.position.y = -8;
+  // _path.poses.push_back(p);
+  // p.pose.position.x = -6;
+  // p.pose.position.y = 2;
+  // _path.poses.push_back(p);
+  // p.pose.position.x = -8;
+  // p.pose.position.y = 2;
+  // _path.poses.push_back(p);
 
   while(ros::ok() && !goalReached())
   {
