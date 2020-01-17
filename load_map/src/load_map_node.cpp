@@ -1,7 +1,7 @@
 #include "load_map/load_map_node.h"
 
 load_map_node::load_map_node(){
-  path = "/home/sj/map.jpg";
+  path = "src/load_map/testMap/map.jpg";
   map_pub_ = _nh.advertise<nav_msgs::OccupancyGrid>("map", 1);
   cout<<"start load_map"<<endl;
 }
@@ -25,8 +25,8 @@ void load_map_node::processMap(){
   Mat wallMap, clearMap, unknownMap;
 
   // Binary Threshold
-  threshold(map,wallMap, 1, 1, THRESH_BINARY_INV);
-  threshold(map,clearMap, 250, 1, THRESH_BINARY);
+  threshold(map,wallMap, 20, 1, THRESH_BINARY_INV);
+  threshold(map,clearMap, 220, 1, THRESH_BINARY);
   unknownMap = 1 - (wallMap + clearMap);
   procMap = 100*wallMap + 101 * unknownMap; //Occupancy Map
 

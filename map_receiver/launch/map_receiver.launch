@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<launch>
+  <node pkg="map_receiver" type="map_receiver_node" name="map_receiver_node"/>
+</launch>
