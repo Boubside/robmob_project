@@ -13,28 +13,29 @@
 #include <sensor_msgs/Joy.h>
 
 double resolution;
-double robotRadius = 0.250;
+double robotRadius = 0.350;
 cv::Mat map;
 ros::Publisher pubPath;
 nav_msgs::Path pathMsg;
 bool flag = false;
 int aButton;
 double xg, yg, xi, yi;
-cv::Point robotPos;
+cv::Point2f robotPos;
 std::vector<RRT_node> path;
-cv::Point mapOrigin;
+cv::Point2f imageOrigin;
+cv::Point2f mapOrigin;
 
-cv::Point map2image(cv::Point mapPoint){
-  cv::Point imgPoint;
-  imgPoint.x = mapPoint.x/resolution + mapOrigin.x;
-  imgPoint.y = mapPoint.y/resolution + mapOrigin.y;
+cv::Point2f map2image(cv::Point2f mapPoint){
+  cv::Point2f imgPoint;
+  imgPoint.x = mapPoint.x/resolution + imageOrigin.x;
+  imgPoint.y = mapPoint.y/resolution + imageOrigin.y;
   return imgPoint;
 }
 
-cv::Point image2map(cv::Point imgPoint){
-  cv::Point mapPoint;
-  mapPoint.x = (imgPoint.x + mapOrigin.x) * resolution;
-  mapPoint.y = (imgPoint.y + mapOrigin.y) * resolution;
+cv::Point2f image2map(cv::Point2f imgPoint){
+  cv::Point2f mapPoint;
+  mapPoint.x = (imgPoint.x) * resolution + mapOrigin.x;
+  mapPoint.y = (imgPoint.y) * resolution + mapOrigin.y;
   return mapPoint;
 }
 
@@ -72,8 +73,10 @@ void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& grid)
     map = cv::Mat::zeros(grid->info.height,grid->info.width, CV_8UC1);
     std::vector<signed char> vect;
     vect = grid->data;
-    mapOrigin.x = - grid->info.origin.position.x / resolution;
-    mapOrigin.y = - grid->info.origin.position.y/ resolution;
+    imageOrigin.x = - grid->info.origin.position.x / resolution;
+    imageOrigin.y = - grid->info.origin.position.y/ resolution;
+    mapOrigin.x =  grid->info.origin.position.x;
+    mapOrigin.y =  grid->info.origin.position.y;
     getRobotPose();
 
     for (int i = 0; i< map.rows; i++){
@@ -99,13 +102,16 @@ void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& grid)
 
 void generatePathMessage()
 {
+  if(path.empty()) return;
+  std::cout << "Path size is " << path.size() << std::endl;
   geometry_msgs::PoseStamped pose;
-  for(size_t i = 0; i < path.size(); i++)
+  for(size_t i = 1; i < path.size(); i++)
   {
-    cv::Point inImagePoint(path[i].getX(),path[i].getY());
-    cv::Point inMapPoint = image2map(inImagePoint);
+    cv::Point2f inImagePoint(path[i].getX(),path[i].getY());
+    cv::Point2f inMapPoint = image2map(inImagePoint);
+    std::cout << "We are at node " << i << "/" << path.size() << ". Point (" << inImagePoint.x << "," << inImagePoint.y << ") converted to (" << inMapPoint.x<<"," << inMapPoint.y <<")" << std::endl;
     pose.pose.position.x = inMapPoint.x;
-    pose.pose.position.x = inMapPoint.y;
+    pose.pose.position.y = inMapPoint.y;
     pathMsg.poses.push_back(pose);
   }
 }
@@ -137,15 +143,14 @@ int main(int argc, char **argv)
   }
 
   RRT_tree mojo;
-  std::vector<RRT_node> path = mojo.findPath(robotPos.x, robotPos.y, mapOrigin.x, mapOrigin.y, robotRadius/resolution, map, true);
-
+  path = mojo.findPath(robotPos.x, robotPos.y, mapOrigin.x, mapOrigin.y, robotRadius/resolution, map, true);
+  generatePathMessage();
+  pubPath.publish(pathMsg);
 
   while(!aButton && ros::ok()){
     ros::spinOnce();
     cv::waitKey(100);
   }
-
-  pubPath.publish(pathMsg);
 
   std::cout<<"Planification ended"<<std::endl;
   return 0;
