@@ -23,11 +23,9 @@ int aButton = 0;
 int bButton = 0;
 double xg, yg, xi, yi;
 cv::Point2f robotPos;
-cv::Point2f mapOrigin;
-cv::Point2f imageOrigin;
-nav_msgs::OccupancyGrid grid2;
 std::vector<RRT_node> path;
-
+cv::Point2f imageOrigin;
+cv::Point2f mapOrigin;
 
 cv::Point2f map2image(cv::Point2f mapPoint){
   cv::Point2f imgPoint;
@@ -107,13 +105,15 @@ void getmap()
 
 void generatePathMessage()
 {
+  if(path.empty()) return;
+  std::cout << "Path size is " << path.size() << std::endl;
   geometry_msgs::PoseStamped pose;
-  for(size_t i = 0; i < path.size(); i++)
+  for(size_t i = 1; i < path.size(); i++)
   {
     cv::Point2f inImagePoint(path[i].getX(),path[i].getY());
     cv::Point2f inMapPoint = image2map(inImagePoint);
     pose.pose.position.x = inMapPoint.x;
-    pose.pose.position.x = inMapPoint.y;
+    pose.pose.position.y = inMapPoint.y;
     pathMsg.poses.push_back(pose);
   }
 }
