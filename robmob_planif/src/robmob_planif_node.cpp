@@ -17,14 +17,26 @@ double robotRadius = 0.250;
 cv::Mat map;
 ros::Publisher pubPath;
 nav_msgs::Path pathMsg;
-int flag = 1;
+bool flag = false;
 int aButton;
 double xg, yg, xi, yi;
 cv::Point robotPos;
-cv::Point center;
 std::vector<RRT_node> path;
+cv::Point mapOrigin;
 
-cv::Point image2map(cv::Point p);
+cv::Point map2image(cv::Point mapPoint){
+  cv::Point imgPoint;
+  imgPoint.x = mapPoint.x/resolution + mapOrigin.x;
+  imgPoint.y = mapPoint.y/resolution + mapOrigin.y;
+  return imgPoint;
+}
+
+cv::Point image2map(cv::Point imgPoint){
+  cv::Point mapPoint;
+  mapPoint.x = (imgPoint.x + mapOrigin.x) * resolution;
+  mapPoint.y = (imgPoint.y + mapOrigin.y) * resolution;
+  return mapPoint;
+}
 
 void getRobotPose(){
   tf::TransformListener listener;
@@ -43,9 +55,9 @@ void getRobotPose(){
     }
     robotPos.x = transform.getOrigin().x();
     robotPos.y = transform.getOrigin().y();
+    robotPos = map2image(robotPos);
   }
 
-  // std::cout << xi << ", " << yi << std::endl;
 }
 void joyCallback(const sensor_msgs::Joy::ConstPtr& joy){
   aButton = joy->buttons[0];
@@ -53,20 +65,16 @@ void joyCallback(const sensor_msgs::Joy::ConstPtr& joy){
 
 void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& grid)
 {
-  std::cout<<"mapCallback"<<std::endl;
-  if (flag==0){
+  // std::cout<<"mapCallback"<<std::endl;
+  if (flag){
     std::cout<<"Map received !"<<std::endl;
     resolution = grid->info.resolution;
     map = cv::Mat::zeros(grid->info.height,grid->info.width, CV_8UC1);
     std::vector<signed char> vect;
     vect = grid->data;
-    center.x = - grid->info.origin.position.x / resolution;
-    center.y = - grid->info.origin.position.y/ resolution;
+    mapOrigin.x = - grid->info.origin.position.x / resolution;
+    mapOrigin.y = - grid->info.origin.position.y/ resolution;
     getRobotPose();
-    robotPos.x = robotPos.x/resolution + center.x;
-    robotPos.y = robotPos.y/resolution + center.y;
-    std::cout<<"Résolution : "<<resolution<<std::endl;
-    std::cout<<"Origin :"<<std::endl<<"x : "<<center.x<<std::endl<<"y : "<<center.y<<std::endl;
 
     for (int i = 0; i< map.rows; i++){
       for (int j = 0; j< map.cols; j++){
@@ -79,18 +87,14 @@ void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& grid)
       }
     }
     cv::cvtColor(map,map,CV_GRAY2BGR);
-    circle(map, center, 2, cv::Scalar(0,0,255));
+    circle(map, mapOrigin, 2, cv::Scalar(0,0,255));
     circle(map, robotPos, 2, cv::Scalar(0,255,0));
-
-
-    // std::cout << "x = " << xi << ", y = " << yi << std::endl;
 
     std::cout<<"Map treated !"<<std::endl;
     imshow("Map",map);
 
-    RRT_tree mojo;
-    path = mojo.findPath(robotPos.x, robotPos.y, center.x, center.y, robotRadius/resolution, map, true);
-    flag = 1;
+
+    flag = false;
   }
 }
 
@@ -115,7 +119,7 @@ int main(int argc, char **argv)
   ros::Subscriber map_sub;
   ros::Subscriber joy_sub;
   aButton = 0;
-  std::cout<<"Hello MineTurtle"<<std::endl;
+  std::cout<<"Planification Ready"<<std::endl;
 
   map_sub = _nh.subscribe<nav_msgs::OccupancyGrid>("map", 1, &mapCallback);
   joy_sub = _nh.subscribe<sensor_msgs::Joy>("joy",10, &joyCallback);
@@ -125,13 +129,16 @@ int main(int argc, char **argv)
     ros::spinOnce();
     cv::waitKey(100);
   }
-  flag = 0;
-  std::cout<<"Middle MineTurtle !"<<std::endl;
+  flag = true;
+  std::cout<<"Waiting for Map ..."<<std::endl;
 
-  while(aButton && ros::ok()){
+  while(flag && ros::ok()){
     ros::spinOnce();
     cv::waitKey(100);
   }
+
+  RRT_tree mojo;
+  std::vector<RRT_node> path = mojo.findPath(robotPos.x, robotPos.y, mapOrigin.x, mapOrigin.y, robotRadius/resolution, map, true);
 
 
   while(!aButton && ros::ok()){
@@ -140,7 +147,6 @@ int main(int argc, char **argv)
   }
 
   pubPath.publish(pathMsg);
-
-  std::cout<<"Goodbye MineTurtle"<<std::endl;
+  std::cout<<"Planification ended"<<std::endl;
   return 0;
 }
