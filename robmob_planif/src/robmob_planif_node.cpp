@@ -22,6 +22,9 @@ int aButton;
 double xg, yg, xi, yi;
 cv::Point robotPos;
 cv::Point center;
+std::vector<RRT_node> path;
+
+cv::Point image2map(cv::Point p);
 
 void getRobotPose(){
   tf::TransformListener listener;
@@ -86,10 +89,24 @@ void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& grid)
     imshow("Map",map);
 
     RRT_tree mojo;
-    std::vector<RRT_node> path = mojo.findPath(robotPos.x, robotPos.y, center.x, center.y, robotRadius/resolution, map, true);
+    path = mojo.findPath(robotPos.x, robotPos.y, center.x, center.y, robotRadius/resolution, map, true);
     flag = 1;
   }
 }
+
+void generatePathMessage()
+{
+  geometry_msgs::PoseStamped pose;
+  for(size_t i = 0; i < path.size(); i++)
+  {
+    cv::Point inImagePoint(path[i].getX(),path[i].getY());
+    cv::Point inMapPoint = image2map(inImagePoint);
+    pose.pose.position.x = inMapPoint.x;
+    pose.pose.position.x = inMapPoint.y;
+    pathMsg.poses.push_back(pose);
+  }
+}
+
 
 int main(int argc, char **argv)
 {
@@ -117,13 +134,12 @@ int main(int argc, char **argv)
   }
 
 
-
-
-
   while(!aButton && ros::ok()){
     ros::spinOnce();
     cv::waitKey(100);
   }
+
+  pubPath.publish(pathMsg);
 
   std::cout<<"Goodbye MineTurtle"<<std::endl;
   return 0;
