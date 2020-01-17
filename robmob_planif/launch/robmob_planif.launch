@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
 <launch>
-  <node pkg="robmob_planif" type="robmob_planif_node" name="robmob_planif_node" launch-prefix="gdb --args"/>
+  <node pkg="robmob_planif" type="robmob_planif_node" name="robmob_planif_node" output="screen"/>
+  <node pkg="joy" type="joy_node" name="joy_node"/>
 </launch>

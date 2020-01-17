@@ -119,7 +119,7 @@ void RRT_tree::randFreeConf(int* xr, int* yr, cv::Mat map){
   do{
     x = map.cols * (double) rand()/RAND_MAX;
     y = map.rows * (double) rand()/RAND_MAX;
-  }while(map.at<uchar>(y, x) == 0);
+  }while(map.at<uchar>(y, x) != 255);
   *xr = x;
   *yr = y;
 }
@@ -243,7 +243,7 @@ std::vector<RRT_node> RRT_tree::findPath(int xi, int yi, int xg, int yg, int rob
 
   buildTree(xi, yi, xg, yg, map, dq, maxIterations);
   calculatePath(xi, yi, xg, yg);
-  if(draw) drawTree(&map, xg, yg, "RRT tree");
+  // if(draw) drawTree(&map, xg, yg, "RRT tree");
   if(draw) drawPath(&path, xg, yg, "Raw path");
 
   removeUnecessaryNodes(map, xg, yg);
