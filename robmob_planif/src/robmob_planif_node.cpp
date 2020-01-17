@@ -96,12 +96,12 @@ void getmap()
       }
     }
     cv::cvtColor(map,map,CV_GRAY2BGR);
-    circle(map, mapOrigin, 2, cv::Scalar(0,0,255));
-    circle(map, robotPos, 2, cv::Scalar(0,255,0));
+    // circle(map, mapOrigin, 2, cv::Scalar(0,0,255));
+    // circle(map, robotPos, 2, cv::Scalar(0,255,0));
 
     std::cout << grid2.info.height << ", " << grid2.info.width << std::endl;
     std::cout<<"[Planif] Map treated !"<<std::endl;
-    imshow("Map",map);
+    // imshow("Map",map);
     std::cout<<"[Planif] Map displayed !"<<std::endl;
 }
 
