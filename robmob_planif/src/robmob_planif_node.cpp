@@ -34,8 +34,8 @@ cv::Point2f map2image(cv::Point2f mapPoint){
 
 cv::Point2f image2map(cv::Point2f imgPoint){
   cv::Point2f mapPoint;
-  mapPoint.x = (imgPoint.x) * resolution + mapOrigin.x;
-  mapPoint.y = (imgPoint.y) * resolution + mapOrigin.y;
+  mapPoint.x = imgPoint.x * resolution + mapOrigin.x;
+  mapPoint.y = imgPoint.y * resolution + mapOrigin.y;
   return mapPoint;
 }
 
