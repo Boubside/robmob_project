@@ -153,7 +153,7 @@ int main(int argc, char **argv)
   // generatePathMessage();
   // pubPath.publish(pathMsg);
 
-  while(aButton && ros::ok()){
+  while(flag && ros::ok()){
     ros::spinOnce();
     cv::waitKey(100);
   }
