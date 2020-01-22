@@ -102,8 +102,7 @@ void RRT_tree::buildTree(int xi, int yi, int xg, int yg, cv::Mat map, int dq, in
 
   //RRT algorithm
   while(!goalReached(xg ,yg, xnew, ynew, dq) && itCount++ < maxIterations && ros::ok()){
-    std::cout << "Building the tree : " << itCount << std::endl;
-    drawPath(&map, xg, yg, "path in construction");
+    // std::cout << "Building tree, iteration : " << itCount << std::endl;
     randFreeConf(&xr, &yr, gray);
     nearestNode(xr, yr, &xnear, &ynear);
     if(newConfig(xnear, ynear, xr, yr, &xnew, &ynew, dq, gray)){

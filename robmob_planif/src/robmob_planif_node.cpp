@@ -23,9 +23,11 @@ int aButton = 0;
 int bButton = 0;
 double xg, yg, xi, yi;
 cv::Point2f robotPos;
-std::vector<RRT_node> path;
-cv::Point2f imageOrigin;
 cv::Point2f mapOrigin;
+cv::Point2f imageOrigin;
+nav_msgs::OccupancyGrid grid2;
+std::vector<RRT_node> path;
+
 
 cv::Point2f map2image(cv::Point2f mapPoint){
   cv::Point2f imgPoint;
@@ -40,6 +42,7 @@ cv::Point2f image2map(cv::Point2f imgPoint){
   mapPoint.y = imgPoint.y * resolution + mapOrigin.y;
   return mapPoint;
 }
+
 
 void getRobotPose(){
   tf::TransformListener listener;
@@ -62,6 +65,7 @@ void getRobotPose(){
   }
 
 }
+
 void joyCallback(const sensor_msgs::Joy::ConstPtr& joy){
   aButton = joy->buttons[0];
   bButton = joy->buttons[1];
@@ -75,8 +79,10 @@ void getmap()
     map = cv::Mat::zeros(grid2.info.height,grid2.info.width, CV_8UC1);
     std::vector<signed char> vect;
     vect = grid2.data;
-    mapOrigin.x = - grid2.info.origin.position.x / resolution;
-    mapOrigin.y = - grid2.info.origin.position.y/ resolution;
+    mapOrigin.x =  grid2.info.origin.position.x;
+    mapOrigin.y =  grid2.info.origin.position.y;
+    imageOrigin.x = - mapOrigin.x / resolution;
+    imageOrigin.y =- mapOrigin.y / resolution;
     getRobotPose();
 
     for (int i = 0; i< map.rows; i++){
@@ -93,23 +99,21 @@ void getmap()
     circle(map, mapOrigin, 2, cv::Scalar(0,0,255));
     circle(map, robotPos, 2, cv::Scalar(0,255,0));
 
+    std::cout << grid2.info.height << ", " << grid2.info.width << std::endl;
     std::cout<<"[Planif] Map treated !"<<std::endl;
     imshow("Map",map);
-
+    std::cout<<"[Planif] Map displayed !"<<std::endl;
 }
 
 void generatePathMessage()
 {
-  if(path.empty()) return;
-  std::cout << "Path size is " << path.size() << std::endl;
   geometry_msgs::PoseStamped pose;
-  for(size_t i = 1; i < path.size(); i++)
+  for(size_t i = 0; i < path.size(); i++)
   {
     cv::Point2f inImagePoint(path[i].getX(),path[i].getY());
     cv::Point2f inMapPoint = image2map(inImagePoint);
-    std::cout << "We are at node " << i << "/" << path.size() << ". Point (" << inImagePoint.x << "," << inImagePoint.y << ") converted to (" << inMapPoint.x<<"," << inMapPoint.y <<")" << std::endl;
     pose.pose.position.x = inMapPoint.x;
-    pose.pose.position.y = inMapPoint.y;
+    pose.pose.position.x = inMapPoint.y;
     pathMsg.poses.push_back(pose);
   }
 }
@@ -145,7 +149,9 @@ int main(int argc, char **argv)
   grid2 = srv.response.map;
   getmap();
   RRT_tree mojo;
-  std::vector<RRT_node> path = mojo.findPath(robotPos.x, robotPos.y, mapOrigin.x, mapOrigin.y, robotRadius/resolution, map, true);
+  path = mojo.findPath(robotPos.x, robotPos.y, imageOrigin.x, imageOrigin.y, robotRadius/resolution, map, true);
+  // generatePathMessage();
+  // pubPath.publish(pathMsg);
 
   while(aButton && ros::ok()){
     ros::spinOnce();
@@ -158,6 +164,6 @@ int main(int argc, char **argv)
   }
 
   std::cout<<"[Planif] Planification ended"<<std::endl;
-  return 0;
 
+  return 0;
 }
