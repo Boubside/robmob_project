@@ -236,7 +236,6 @@ void RRT_tree::removeUnecessaryNodes(cv::Mat map, int xg, int yg){
 
 std::vector<RRT_node> RRT_tree::findPath(int xi, int yi, int xg, int yg, int robotRadius, cv::Mat map, bool draw, int dq, int maxIterations){
   inflateObstacles(&map, robotRadius);
-
   cv::Mat path = map.clone();
   cv::Mat newPath = map.clone();
 
