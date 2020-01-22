@@ -245,7 +245,7 @@ std::vector<RRT_node> RRT_tree::findPath(int xi, int yi, int xg, int yg, int rob
   buildTree(xi, yi, xg, yg, map, dq, maxIterations);
   calculatePath(xi, yi, xg, yg);
   // if(draw) drawTree(&map, xg, yg, "RRT tree");
-  // if(draw) drawPath(&path, xg, yg, "Raw path");
+  if(draw) drawPath(&path, xg, yg, "Raw path");
 
   removeUnecessaryNodes(map, xg, yg);
   if(draw) drawPath(&newPath, xg, yg, "Smoothed path");
