@@ -1,5 +1,6 @@
 #include "robmob_planif/RRT_tree.hpp"
 #include <time.h>
+#include <ros/ros.h>
 
 
 RRT_node::RRT_node (){
@@ -100,7 +101,9 @@ void RRT_tree::buildTree(int xi, int yi, int xg, int yg, cv::Mat map, int dq, in
   cv::cvtColor(map, gray, CV_BGR2GRAY);
 
   //RRT algorithm
-  while(!goalReached(xg ,yg, xnew, ynew, dq) && itCount++ < maxIterations){
+  while(!goalReached(xg ,yg, xnew, ynew, dq) && itCount++ < maxIterations && ros::ok()){
+    std::cout << "Building the tree : " << itCount << std::endl;
+    drawPath(&map, xg, yg, "path in construction");
     randFreeConf(&xr, &yr, gray);
     nearestNode(xr, yr, &xnear, &ynear);
     if(newConfig(xnear, ynear, xr, yr, &xnew, &ynew, dq, gray)){
@@ -244,7 +247,7 @@ std::vector<RRT_node> RRT_tree::findPath(int xi, int yi, int xg, int yg, int rob
   buildTree(xi, yi, xg, yg, map, dq, maxIterations);
   calculatePath(xi, yi, xg, yg);
   // if(draw) drawTree(&map, xg, yg, "RRT tree");
-  // if(draw) drawPath(&path, xg, yg, "Raw path");
+  if(draw) drawPath(&path, xg, yg, "Raw path");
 
   removeUnecessaryNodes(map, xg, yg);
   if(draw) drawPath(&newPath, xg, yg, "Smoothed path");
