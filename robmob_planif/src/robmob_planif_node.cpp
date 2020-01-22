@@ -19,7 +19,8 @@ cv::Mat map;
 ros::Publisher pubPath;
 nav_msgs::Path pathMsg;
 bool flag = false;
-int aButton;
+int aButton = 0;
+int bButton = 0;
 double xg, yg, xi, yi;
 cv::Point2f robotPos;
 std::vector<RRT_node> path;
@@ -63,12 +64,13 @@ void getRobotPose(){
 }
 void joyCallback(const sensor_msgs::Joy::ConstPtr& joy){
   aButton = joy->buttons[0];
+  bButton = joy->buttons[1];
 }
 
 
 void getmap()
 {
-    std::cout<<"Map received !"<<std::endl;
+    std::cout<<"[Planif] Map received !"<<std::endl;
     resolution = grid2.info.resolution;
     map = cv::Mat::zeros(grid2.info.height,grid2.info.width, CV_8UC1);
     std::vector<signed char> vect;
@@ -91,7 +93,7 @@ void getmap()
     circle(map, mapOrigin, 2, cv::Scalar(0,0,255));
     circle(map, robotPos, 2, cv::Scalar(0,255,0));
 
-    std::cout<<"Map treated !"<<std::endl;
+    std::cout<<"[Planif] Map treated !"<<std::endl;
     imshow("Map",map);
 
 }
@@ -121,7 +123,7 @@ int main(int argc, char **argv)
   ros::Subscriber joy_sub;
   ros::ServiceClient client;
   aButton = 0;
-  std::cout<<"Planification Ready"<<std::endl;
+  std::cout<<"[Planif] Planification Ready"<<std::endl;
 
   client = _nh.serviceClient<nav_msgs::GetMap>("dynamic_map");
   joy_sub = _nh.subscribe<sensor_msgs::Joy>("joy",10, &joyCallback);
@@ -131,13 +133,13 @@ int main(int argc, char **argv)
     ros::spinOnce();
     cv::waitKey(100);
   }
-  std::cout<<"Waiting for Map ..."<<std::endl;
+  std::cout<<"[Planif] Waiting for Map ..."<<std::endl;
 
 
   nav_msgs::GetMap srv;
   if (!client.call(srv))
   {
-    std::cout<<"Service call failed"<<std::endl;
+    std::cout<<"[Planif] Service call failed"<<std::endl;
     return 0;
   }
   grid2 = srv.response.map;
@@ -155,7 +157,7 @@ int main(int argc, char **argv)
     cv::waitKey(100);
   }
 
-  std::cout<<"Planification ended"<<std::endl;
+  std::cout<<"[Planif] Planification ended"<<std::endl;
   return 0;
 
 }
