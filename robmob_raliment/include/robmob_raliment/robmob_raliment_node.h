@@ -20,11 +20,11 @@ class robmob_raliment_node{
     nav_msgs::Path _path;
 
     size_t _inPathTargetIndex = 0;
-    double _l1 = 0.2;
+    double _l1 = 0.3;
     double _k1 = 2;
     double _k2 = 2;
-    double _maxLinearSpeed = 1;
-    double _maxRotationSpeed = 2;
+    double _maxLinearSpeed = 0.5;
+    double _maxRotationSpeed = 0.7;
     double _reachedRadius;
 
     geometry_msgs::Pose _robotPose;
