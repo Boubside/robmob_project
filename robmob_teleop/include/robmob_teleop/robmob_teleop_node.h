@@ -14,12 +14,14 @@ private:
   ros::NodeHandle _nh;
 
   int linear_, angular_;
-  double l_scale = 5;
-  double a_scale = 5;
-  ros::Publisher vel_pub_;
+  double l_scale = 1;
+  double a_scale = 1;
   ros::Subscriber joy_sub_;
 
 public:
+  ros::Publisher vel_pub_;
+  geometry_msgs::Twist _twist;
+
   robmob_teleop_node();
   ~robmob_teleop_node();
 };

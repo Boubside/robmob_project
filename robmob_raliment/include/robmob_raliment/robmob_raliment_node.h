@@ -21,8 +21,8 @@ class robmob_raliment_node{
 
     size_t _inPathTargetIndex = 0;
     double _l1 = 0.2;
-    double _k1 = 1;
-    double _k2 = 1;
+    double _k1 = 2;
+    double _k2 = 2;
     double _maxLinearSpeed = 1;
     double _maxRotationSpeed = 2;
     double _reachedRadius;

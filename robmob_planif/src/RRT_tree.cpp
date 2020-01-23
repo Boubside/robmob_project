@@ -145,8 +145,8 @@ bool RRT_tree::newConfig(int xnear, int ynear, int xr, int yr, int *xnew, int *y
   int x, y;
   double d = sqrt((yr - ynear)*(yr - ynear) + (xr - xnear)*(xr - xnear));
 
-  x = xnear + ((xr-xnear)*(d/dq));
-  y = ynear + ((yr-ynear)*(d/dq));
+  x = xnear + ((xr-xnear)*(dq/d));
+  y = ynear + ((yr-ynear)*(dq/d));
 
   cv::LineIterator it(map, cv::Point(xnear, ynear), cv::Point(x, y));
 

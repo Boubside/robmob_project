@@ -12,15 +12,18 @@ robmob_teleop_node::~robmob_teleop_node(){
 }
 
 void robmob_teleop_node::joyCallback(const sensor_msgs::Joy::ConstPtr& joy){
-  geometry_msgs::Twist twist;
-  twist.angular.z = a_scale*joy->axes[angular_];
-  twist.linear.x = l_scale*joy->axes[linear_];
-  vel_pub_.publish(twist);
+  _twist.angular.z = a_scale*joy->axes[angular_];
+  _twist.linear.x = l_scale*joy->axes[linear_];
 }
 
 int main(int argc, char** argv){
   ros::init(argc, argv, "robmob_teleop_node");
   robmob_teleop_node teleop;
- 
-  ros::spin();
+  ros::Rate rate(100);
+
+  while(ros::ok()){
+    rate.sleep();
+    ros::spinOnce();
+    teleop.vel_pub_.publish(teleop._twist);
+  }
 }
