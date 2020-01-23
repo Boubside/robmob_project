@@ -103,6 +103,7 @@ void RRT_tree::buildTree(int xi, int yi, int xg, int yg, cv::Mat map, int dq, in
   //RRT algorithm
   while(!goalReached(xg ,yg, xnew, ynew, dq) && itCount++ < maxIterations && ros::ok()){
     // std::cout << "Building tree, iteration : " << itCount << std::endl;
+    drawTree(&map, xg, yg, "RRT tree");
     randFreeConf(&xr, &yr, gray);
     nearestNode(xr, yr, &xnear, &ynear);
     if(newConfig(xnear, ynear, xr, yr, &xnew, &ynew, dq, gray)){
@@ -245,7 +246,7 @@ std::vector<RRT_node> RRT_tree::findPath(int xi, int yi, int xg, int yg, int rob
   buildTree(xi, yi, xg, yg, map, dq, maxIterations);
   calculatePath(xi, yi, xg, yg);
   // if(draw) drawTree(&map, xg, yg, "RRT tree");
-  if(draw) drawPath(&path, xg, yg, "Raw path");
+  // if(draw) drawPath(&path, xg, yg, "Raw path");
 
   removeUnecessaryNodes(map, xg, yg);
   if(draw) drawPath(&newPath, xg, yg, "Smoothed path");
