@@ -150,26 +150,7 @@ void robmob_raliment_node::run()
 {
   while(ros::ok() && !_pathReceived)
     ros::spinOnce();
-
-  // geometry_msgs::PoseStamped p;
-  // p.pose.position.x = 0;
-  // p.pose.position.y = 2;
-  // _path.poses.push_back(p);
-  // p.pose.position.x = -3;
-  // p.pose.position.y = 2;
-  // _path.poses.push_back(p);
-  // p.pose.position.x = -4;
-  // p.pose.position.y = -8;
-  // _path.poses.push_back(p);
-  // p.pose.position.x = -6;
-  // p.pose.position.y = -8;
-  // _path.poses.push_back(p);
-  // p.pose.position.x = -6;
-  // p.pose.position.y = 2;
-  // _path.poses.push_back(p);
-  // p.pose.position.x = -8;
-  // p.pose.position.y = 2;
-  // _path.poses.push_back(p);
+    ros::Rate rate(100);
 
   while(ros::ok() && !goalReached())
   {
@@ -187,6 +168,8 @@ void robmob_raliment_node::run()
     std::cout << "Current index in path : " << _inPathTargetIndex << std::endl;
     std::cout << "Target point : " << _path.poses[_inPathTargetIndex].pose.position.x << " ," <<  _path.poses[_inPathTargetIndex].pose.position.y << std::endl;
     _vel_pub.publish(_command);
+    rate.sleep();
+    ros::spinOnce();
   }
 
   stopMovement();

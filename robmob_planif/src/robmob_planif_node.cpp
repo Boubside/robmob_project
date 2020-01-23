@@ -14,13 +14,14 @@
 #include <sensor_msgs/Joy.h>
 
 double resolution;
-double robotRadius = 0.05;
+double robotRadius = 0.25;
 cv::Mat map;
 ros::Publisher pubPath;
 nav_msgs::Path pathMsg;
 bool flag = false;
 int aButton = 0;
 int bButton = 0;
+int xButton = 0;
 double xg, yg, xi, yi;
 cv::Point2f robotPos;
 std::vector<RRT_node> path;
@@ -62,13 +63,14 @@ void getRobotPose(){
   cv::Point2f robot;
   robot.x = transform.getOrigin().x();
   robot.y = transform.getOrigin().y();
-  robotPos = map2image(robotPos);
+  robotPos = map2image(robot);
 
 }
 
 void joyCallback(const sensor_msgs::Joy::ConstPtr& joy){
   aButton = joy->buttons[0];
   bButton = joy->buttons[1];
+  xButton = joy->buttons[2];
 }
 
 
@@ -105,6 +107,7 @@ void getmap()
 
     std::cout<<"[Planif] Map treated !"<<std::endl;
     imshow("Map",map);
+    std::cout<<"[Planif] Map displayed !"<<std::endl;
 }
 
 void generatePathMessage()
@@ -132,12 +135,16 @@ int main(int argc, char **argv)
   ros::ServiceClient client;
   aButton = 0;
   std::cout<<"[Planif] Planification Ready"<<std::endl;
-
+  std::cout<<"[Planif] Press [A] to start planification" << std::endl;
   client = _nh.serviceClient<nav_msgs::GetMap>("dynamic_map");
   joy_sub = _nh.subscribe<sensor_msgs::Joy>("joy",10, &joyCallback);
   pubPath = _nh.advertise<nav_msgs::Path>("path", 10);
 
-  while(!aButton && ros::ok()){
+  while(!aButton && ros::ok()){ //press A Button
+    ros::spinOnce();
+    cv::waitKey(100);
+  }
+  while(aButton && ros::ok()){ //release A Button
     ros::spinOnce();
     cv::waitKey(100);
   }
@@ -145,25 +152,50 @@ int main(int argc, char **argv)
 
 
   nav_msgs::GetMap srv;
-  if (!client.call(srv))
-  {
-    std::cout<<"[Planif] Service call failed"<<std::endl;
-    return 0;
+  while(!aButton && ros::ok()){
+    while(bButton && ros::ok()){ //release B Button
+      ros::spinOnce();
+      cv::waitKey(100);
+    }
+
+    if (!client.call(srv))
+    {
+      std::cout<<"[Planif] Service call failed"<<std::endl;
+      return 0;
+    }
+    grid2 = srv.response.map;
+    getmap();
+    RRT_tree mojo;
+    std::cout << "Resolution : " << resolution << ", Robot radius : " << robotRadius / resolution << std::endl;
+    path = mojo.findPath(robotPos.x, robotPos.y, imageOrigin.x, imageOrigin.y, robotRadius/resolution, map, true, 20);
+    std::cout<<"[Planif] [A] Validate Path"<<std::endl;
+    std::cout<<"[Planif] [B] Reboot Path"<<std::endl;
+    std::cout<<"[Planif] [X] Exit Planification"<<std::endl;
+
+    while(!bButton && ros::ok()){
+      if (xButton){
+        std::cout<<"[Planif] Planification Ended"<<std::endl;
+        return 0;
+      }
+      if (aButton){
+        break;
+      }
+      ros::spinOnce();
+      cv::waitKey(100);
+    }
+
+
   }
-  grid2 = srv.response.map;
-  getmap();
-  RRT_tree mojo;
-  std::cout << "Resolution : " << resolution << ", Robot radius : " << robotRadius / resolution << std::endl;
-  path = mojo.findPath(robotPos.x, robotPos.y, imageOrigin.x, imageOrigin.y, robotRadius/resolution, map, true, 20);
   generatePathMessage();
   pubPath.publish(pathMsg);
 
-  while(aButton && ros::ok()){
+  while(aButton && ros::ok()){ //release A Button
     ros::spinOnce();
     cv::waitKey(100);
   }
+  std::cout<<"[Planif] Press [X] to end planification node" << std::endl;
 
-  while(!aButton && ros::ok()){
+  while(!xButton && ros::ok()){ //press X Button
     ros::spinOnce();
     cv::waitKey(100);
   }
