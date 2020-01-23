@@ -14,7 +14,7 @@
 #include <sensor_msgs/Joy.h>
 
 double resolution;
-double robotRadius = 0.05;
+double robotRadius = 0.25;
 cv::Mat map;
 ros::Publisher pubPath;
 nav_msgs::Path pathMsg;
@@ -26,6 +26,7 @@ cv::Point2f robotPos;
 std::vector<RRT_node> path;
 cv::Point2f imageOrigin;
 cv::Point2f mapOrigin;
+cv::Point2f initialRobotPose;
 nav_msgs::OccupancyGrid grid2;
 
 cv::Point2f map2image(cv::Point2f mapPoint){
@@ -54,6 +55,10 @@ void getRobotPose(){
       listener.lookupTransform("/map","/base_link",now,transform);
       found = true;
     }
+    catch(tf::ExtrapolationException e){
+      ROS_INFO("%s", e.what());
+      ros::Duration(1.0).sleep();
+    }
     catch(tf::TransformException e){
       ROS_INFO("%s", e.what());
       ros::Duration(1.0).sleep();
@@ -62,7 +67,7 @@ void getRobotPose(){
   cv::Point2f robot;
   robot.x = transform.getOrigin().x();
   robot.y = transform.getOrigin().y();
-  robotPos = map2image(robotPos);
+  robotPos = map2image(robot);
 
 }
 
@@ -81,8 +86,8 @@ void getmap()
     vect = grid2.data;
     mapOrigin.x =  grid2.info.origin.position.x;
     mapOrigin.y =  grid2.info.origin.position.y;
-    imageOrigin.x = - mapOrigin.x / resolution;
-    imageOrigin.y = - mapOrigin.y / resolution;
+    imageOrigin.x = -mapOrigin.x / resolution;
+    imageOrigin.y = -mapOrigin.y / resolution;
     getRobotPose();
 
     for (int i = 0; i< map.rows; i++){
@@ -96,15 +101,18 @@ void getmap()
       }
     }
     cv::cvtColor(map,map,CV_GRAY2BGR);
-    circle(map, imageOrigin, 5, cv::Scalar(0,0,255));
+    circle(map, initialRobotPose, 5, cv::Scalar(0,0,255));
     circle(map, robotPos, 5, cv::Scalar(0,255,0));
 
     std::cout << "Robot pose : (" << robotPos.x << ", " << robotPos.y << ")" << std::endl;
+    std::cout << "Robot origin : (" << initialRobotPose.x << ", " << initialRobotPose.y << ")" << std::endl;
     std::cout << "Image origin : (" << imageOrigin.x << ", " << imageOrigin.y << ")" << std::endl;
     std::cout << "map origin : (" << mapOrigin.x << ", " << mapOrigin.y << ")" << std::endl;
+    std::cout << "image size : (" << grid2.info.height << ", " << grid2.info.width << ")" << std::endl;
 
     std::cout<<"[Planif] Map treated !"<<std::endl;
     imshow("Map",map);
+    std::cout<<"[Planif] Map displayed !"<<std::endl;
 }
 
 void generatePathMessage()
@@ -131,18 +139,10 @@ int main(int argc, char **argv)
   ros::Subscriber joy_sub;
   ros::ServiceClient client;
   aButton = 0;
-  std::cout<<"[Planif] Planification Ready"<<std::endl;
 
   client = _nh.serviceClient<nav_msgs::GetMap>("dynamic_map");
   joy_sub = _nh.subscribe<sensor_msgs::Joy>("joy",10, &joyCallback);
   pubPath = _nh.advertise<nav_msgs::Path>("path", 10);
-
-  while(!aButton && ros::ok()){
-    ros::spinOnce();
-    cv::waitKey(100);
-  }
-  std::cout<<"[Planif] Waiting for Map ..."<<std::endl;
-
 
   nav_msgs::GetMap srv;
   if (!client.call(srv))
@@ -152,9 +152,27 @@ int main(int argc, char **argv)
   }
   grid2 = srv.response.map;
   getmap();
+  initialRobotPose = robotPos;
+  std::cout << "Robot origin : (" << robotPos.x << ", " << robotPos.y << ")" << std::endl;
+  std::cout<<"[Planif] Planification Ready"<<std::endl;
+
+  while(!aButton && ros::ok()){
+    ros::spinOnce();
+    cv::waitKey(100);
+  }
+  std::cout<<"[Planif] Waiting for Map ..."<<std::endl;
+
+
+  if (!client.call(srv))
+  {
+    std::cout<<"[Planif] Service call failed"<<std::endl;
+    return 0;
+  }
+  grid2 = srv.response.map;
+  getmap();
   RRT_tree mojo;
   std::cout << "Resolution : " << resolution << ", Robot radius : " << robotRadius / resolution << std::endl;
-  path = mojo.findPath(robotPos.x, robotPos.y, imageOrigin.x, imageOrigin.y, robotRadius/resolution, map, true, 20);
+  path = mojo.findPath(robotPos.x, robotPos.y, imageOrigin.x, imageOrigin.y, robotRadius/resolution, map, true, 5);
   generatePathMessage();
   pubPath.publish(pathMsg);
 
