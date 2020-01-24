@@ -112,11 +112,11 @@ void getmap()
     circle(map, initialRobotPoseIMG, 5, cv::Scalar(0,0,255));
     circle(map, robotPosIMG, 5, cv::Scalar(0,255,0));
 
-    // std::cout << "Robot pose : (" << robotPos.x << ", " << robotPos.y << ")" << std::endl;
-    // std::cout << "Robot origin : (" << initialRobotPose.x << ", " << initialRobotPose.y << ")" << std::endl;
-    // std::cout << "Image origin : (" << imageOrigin.x << ", " << imageOrigin.y << ")" << std::endl;
-    // std::cout << "map origin : (" << mapOrigin.x << ", " << mapOrigin.y << ")" << std::endl;
-    // std::cout << "image size : (" << grid2.info.height << ", " << grid2.info.width << ")" << std::endl;
+    std::cout << "Robot pose : (" << robotPos.x << ", " << robotPos.y << ")" << std::endl;
+    std::cout << "Robot origin : (" << initialRobotPose.x << ", " << initialRobotPose.y << ")" << std::endl;
+    std::cout << "Image origin : (" << imageOrigin.x << ", " << imageOrigin.y << ")" << std::endl;
+    std::cout << "map origin : (" << mapOrigin.x << ", " << mapOrigin.y << ")" << std::endl;
+    std::cout << "image size : (" << grid2.info.height << ", " << grid2.info.width << ")" << std::endl;
 
     std::cout<<"[Planif] Map treated !"<<std::endl;
     imshow("Map",map);
@@ -151,6 +151,7 @@ int main(int argc, char **argv)
   joy_sub = _nh.subscribe<sensor_msgs::Joy>("joy",10, &joyCallback);
   pubPath = _nh.advertise<nav_msgs::Path>("path", 10);
 
+  ros::Rate rate(50);
   nav_msgs::GetMap srv;
   // if (!client.call(srv))
   // {
@@ -164,12 +165,12 @@ int main(int argc, char **argv)
 
   while(!aButton && ros::ok()){
     ros::spinOnce();
-    cv::waitKey(100);
+    rate.sleep();
   }
   std::cout<<"[Planif] Waiting for Map ..."<<std::endl;
   while(aButton && ros::ok()){
     ros::spinOnce();
-    cv::waitKey(100);
+    rate.sleep();
   }
 
 
@@ -177,7 +178,7 @@ int main(int argc, char **argv)
   while(!aButton && ros::ok()){
     while(bButton && ros::ok()){ //release B Button
       ros::spinOnce();
-      cv::waitKey(100);
+      rate.sleep();
     }
 
     if (!client.call(srv))
@@ -203,7 +204,7 @@ int main(int argc, char **argv)
         break;
       }
       ros::spinOnce();
-      cv::waitKey(100);
+      rate.sleep();
     }
 
 
@@ -213,13 +214,13 @@ int main(int argc, char **argv)
 
   while(aButton && ros::ok()){ //release A Button
     ros::spinOnce();
-    cv::waitKey(100);
+    rate.sleep();
   }
   std::cout<<"[Planif] Press [X] to end planification node" << std::endl;
 
   while(!xButton && ros::ok()){ //press X Button
     ros::spinOnce();
-    cv::waitKey(100);
+    rate.sleep();
   }
 
   std::cout<<"[Planif] Planif finished" << std::endl;

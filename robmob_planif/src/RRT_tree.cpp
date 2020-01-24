@@ -153,7 +153,7 @@ bool RRT_tree::newConfig(int xnear, int ynear, int xr, int yr, int *xnew, int *y
 
   for(int i = 0; i < it.count; i++, ++it)
   {
-    if(map.at<uchar>(it.pos()) == 0) return false;
+    if(map.at<uchar>(it.pos()) != 255) return false;
   }
 
   *xnew = x;
@@ -218,7 +218,7 @@ void RRT_tree::removeUnecessaryNodes(cv::Mat map, int xg, int yg){
 
         //Checking if path from i to j is free
         for(int i = 0; i < it.count; i++, ++it){
-          if(gray.at<uchar>(it.pos()) == 0){
+          if(gray.at<uchar>(it.pos()) != 255){
             clear = false;
             break;
           }

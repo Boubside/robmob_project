@@ -21,7 +21,7 @@ private:
 public:
   ros::Publisher vel_pub_;
   geometry_msgs::Twist _twist;
-  bool _stop = false;
+  bool _pause = false;
 
   robmob_teleop_node();
   ~robmob_teleop_node();

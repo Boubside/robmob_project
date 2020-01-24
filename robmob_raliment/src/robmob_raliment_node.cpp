@@ -120,6 +120,11 @@ void robmob_raliment_node::stopMovement()
 void robmob_raliment_node::generateCommand()
 {
   double theta = _robotPose.orientation.z;
+  double dx = _robotPose.position.x + _l1 * cos(theta) - _path.poses[_inPathTargetIndex].pose.position.x;
+  double dy = _robotPose.position.y + _l1 * sin(theta) - _path.poses[_inPathTargetIndex].pose.position.y;
+  double angle = atan2(dy, dx) - theta;
+  _k2 = abs(1/angle);
+  std::cout << "Angle :" << angle << std::endl;
 
   double v1 = -_k1 * (_robotPose.position.x + _l1 * cos(theta) - _path.poses[_inPathTargetIndex].pose.position.x);
   double v2 = -_k2 * (_robotPose.position.y + _l1 * sin(theta) - _path.poses[_inPathTargetIndex].pose.position.y);
