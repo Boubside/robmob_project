@@ -1,4 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-  <node pkg="load_map" type="load_map_node" name="load_map_node"/>
-</launch>
