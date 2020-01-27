@@ -139,6 +139,7 @@ include_directories(
 add_executable(robmob_teleop_node src/robmob_teleop_node.cpp)
 add_executable(robmob_raliment_node src/robmob_raliment_node.cpp)
 add_executable(robmob_planif_node src/robmob_planif_node.cpp src/RRT_tree.cpp)
+add_executable(planif_node src/planif.cpp src/RRT_tree.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -160,6 +161,10 @@ target_link_libraries(robmob_raliment_node
  ${OpenCV_LIBS}
 )
 target_link_libraries(robmob_planif_node
+ ${catkin_LIBRARIES}
+ ${OpenCV_LIBS}
+)
+target_link_libraries(planif_node
  ${catkin_LIBRARIES}
  ${OpenCV_LIBS}
 )

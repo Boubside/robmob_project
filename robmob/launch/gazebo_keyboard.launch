@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+	<arg name="map" default="buvette" />
+	<include file="$(find minilab_simulation)/launch/minilab_gazebo.launch" >
+		<arg name="map_name" value="$(arg map)" />
+	</include>
+	<include file="$(find minilab_simulation)/launch/minilab_state_publisher.launch" />
+
+  <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" args="scan:=/scan">
+    <param name="xmin" value="-5.0"/>
+    <param name="xmax" value="5.0"/>
+    <param name="ymin" value="-5.0"/>
+    <param name="ymax" value="5.0"/>
+    <param name="delta" value="0.05"/>
+  </node>
+  <node pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py" name="teleop_twist_keyboard"/>
+  <!-- <node pkg="robmob" type="planif" name="robmob_planif_node"/> -->
+  <node pkg="robmob" type="robmob_raliment_node" name="robmob_raliment_node"/>
+
+</launch>
