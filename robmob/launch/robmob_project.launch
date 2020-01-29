@@ -9,7 +9,7 @@
     <param name="delta" value="0.05"/>
   </node>
 
-  <node pkg="robmob" type="robmob_teleop_node" name="robmob_teleop_node"/>
-  <node pkg="robmob" type="robmob_planif_node" name="robmob_planif_node"/>
-  <node pkg="robmob" type="robmob_raliment_node" name="robmob_raliment_node"/>
+  <node pkg="robmob" type="teleop_node" name="teleop_node"/>
+  <!-- <node pkg="robmob" type="planif_node" name="planif_node"/>
+  <node pkg="robmob" type="raliment_node" name="raliment_node"/> -->
 </launch>

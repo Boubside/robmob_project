@@ -24,7 +24,7 @@ class robmob_raliment_node{
     double _k1 = 2;
     double _k2 = 2;
     double _maxLinearSpeed = 0.5;
-    double _maxRotationSpeed = 0.7;
+    double _maxRotationSpeed = 1;
     double _reachedRadius;
 
     geometry_msgs::Pose _robotPose;
@@ -44,7 +44,7 @@ class robmob_raliment_node{
 
   public:
 
-    robmob_raliment_node(double l1 = 0.2, double k1 = 10, double k2 = 10, double reachedRadius = 0.1);
+    robmob_raliment_node(double l1 = 0.2, double k1 = 10, double k2 = 0.5, double reachedRadius = 0.5);
     robmob_raliment_node(const robmob_raliment_node& other);
 
     nav_msgs::Path path() const { return _path; }

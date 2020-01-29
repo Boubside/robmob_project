@@ -14,7 +14,6 @@
 #include <sensor_msgs/Joy.h>
 
 
-bool flag = false;
 double resolution;
 
 cv::Mat map;
@@ -30,6 +29,10 @@ std::vector<RRT_node> path;
 ros::Publisher pubPath;
 nav_msgs::Path pathMsg;
 
+int aButton = 0;
+int bButton = 0;
+int xButton = 0;
+
 cv::Point2f map2image(cv::Point2f mapPoint){
   cv::Point2f imgPoint;
   imgPoint.x = mapPoint.x/resolution + imageOrigin.x;
@@ -44,10 +47,10 @@ cv::Point2f image2map(cv::Point2f imgPoint){
   return mapPoint;
 }
 
-void keyboardCallback(const geometry_msgs::Twist::ConstPtr& msg)
-{
-  if(msg->linear.y < 0 && !flag) flag = true;
-  else if(msg->linear.y < 0 && flag) flag = false;
+void joyCallback(const sensor_msgs::Joy::ConstPtr& joy){
+  aButton = joy->buttons[0];
+  bButton = joy->buttons[1];
+  xButton = joy->buttons[2];
 }
 
 cv::Point2f getRobotPose(){
@@ -131,7 +134,7 @@ void generatePathMessage()
 
 int main(int argc, char **argv)
 {
-  double robotRadius = 0.35;
+  double robotRadius = 0.4;
 
   ros::init(argc, argv, "planif_node");
   ros::NodeHandle nh;
@@ -140,23 +143,19 @@ int main(int argc, char **argv)
 
   ros::ServiceClient client = nh.serviceClient<nav_msgs::GetMap>("dynamic_map");
   nav_msgs::GetMap srv;
-  ros::Subscriber teleop = nh.subscribe<geometry_msgs::Twist>("/cmd_vel",10, &keyboardCallback);
+  ros::Subscriber joy_sub = nh.subscribe<sensor_msgs::Joy>("joy",10, &joyCallback);
   pubPath = nh.advertise<nav_msgs::Path>("path", 10);
 
   initialRobotPose = getRobotPose();
   std::cout << "Initial pose : " << initialRobotPose.x << "," << initialRobotPose.y << std::endl;
 
-  while(!flag && ros::ok())
+  while(!aButton && ros::ok())
   {
     rate.sleep();
     ros::spinOnce();
   }
 
-  if (client.call(srv))
-  {
-    std::cout<<"service call worked"<<std::endl;
-  }
-  else
+  if (!client.call(srv))
   {
     std::cout << "service call failed" << std::endl;
     return 0;
@@ -166,14 +165,33 @@ int main(int argc, char **argv)
   resolution = grid.info.resolution;
   getmap(grid);
   RRT_tree mojo;
-  std::cout << "Resolution : " << resolution << ", Robot radius : " << robotRadius / resolution << std::endl;
   path = mojo.findPath(robotPosIMG.x, robotPosIMG.y, initialRobotPoseIMG.x, initialRobotPoseIMG.y, robotRadius/resolution, map, true, 20);
   cv::waitKey(0);
+  std::cout << "[Planif] RRT finished" << std::endl;
+  while(aButton && ros::ok())
+  {
+    rate.sleep();
+    ros::spinOnce();
+  }
 
+  std::cout << "[Planif] Waiting for validation." << std::endl;
+  while(!aButton && ros::ok())
+  {
+    rate.sleep();
+    ros::spinOnce();
+  }
+
+  std::cout << "[Planif] Starting raliment" << std::endl;
   generatePathMessage();
   pubPath.publish(pathMsg);
 
-  while(flag && ros::ok())
+  while(aButton && ros::ok())
+  {
+    rate.sleep();
+    ros::spinOnce();
+  }
+
+  while(!aButton && ros::ok())
   {
     rate.sleep();
     ros::spinOnce();

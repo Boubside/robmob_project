@@ -4,10 +4,12 @@
 
 void robmob_raliment_node::pathCallback(const nav_msgs::Path::ConstPtr& path_)
 {
+  std::cout << "Path received" << std::endl;
   if(!_pathReceived)
   {
     _pathReceived = true;
 
+    std::cout << "Treating path" << std::endl;
     geometry_msgs::PoseStamped p;
     for(size_t i = 0; i < path_->poses.size();i++)
     {
@@ -15,6 +17,7 @@ void robmob_raliment_node::pathCallback(const nav_msgs::Path::ConstPtr& path_)
       p.pose.position.y = path_->poses[i].pose.position.y;
       _path.poses.push_back(p);
     }
+    std::cout << "Path treated" << std::endl;
   }
 }
 
@@ -122,9 +125,8 @@ void robmob_raliment_node::generateCommand()
   double theta = _robotPose.orientation.z;
   double dx = _robotPose.position.x + _l1 * cos(theta) - _path.poses[_inPathTargetIndex].pose.position.x;
   double dy = _robotPose.position.y + _l1 * sin(theta) - _path.poses[_inPathTargetIndex].pose.position.y;
-  double angle = atan2(dy, dx) - theta;
-  _k2 = abs(1/angle);
-  std::cout << "Angle :" << angle << std::endl;
+
+  double angle = theta - atan2(dy, dx);
 
   double v1 = -_k1 * (_robotPose.position.x + _l1 * cos(theta) - _path.poses[_inPathTargetIndex].pose.position.x);
   double v2 = -_k2 * (_robotPose.position.y + _l1 * sin(theta) - _path.poses[_inPathTargetIndex].pose.position.y);
@@ -153,12 +155,18 @@ void robmob_raliment_node::generateCommand()
 
 void robmob_raliment_node::run()
 {
+  ros::Rate rate(100);
+  std::cout << "test" << std::endl;
   while(ros::ok() && !_pathReceived)
+  {
     ros::spinOnce();
-    ros::Rate rate(100);
+    rate.sleep();
+  }
 
+  std::cout << "test" << std::endl;
   while(ros::ok() && !goalReached())
   {
+    std::cout << "test" << std::endl;
     std::cout << "-----------------------------------------------------------------------" << std::endl;
     getRobotPose();
 
@@ -186,6 +194,6 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "rombmob_robmob_raliment_node_node");
   robmob_raliment_node raliment;
   raliment.run();
-
+  std::cout << "raliment finished" << std::endl;
   return 0;
 }
